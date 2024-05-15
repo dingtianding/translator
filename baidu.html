@@ -1,13 +1,75 @@
-<!DOCTYPE html>
-<html lang="en">
+<!doctype html>
 <head>
-    <meta charset="UTF-8">
-    <meta http-equiv="X-UA-Compatible" content="IE=edge">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Baidu</title>
+    <meta charset="utf-8"/>
+    <script src="https://code.jquery.com/jquery-1.11.3.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/blueimp-md5/2.19.0/js/md5.min.js"></script>
 </head>
 <body>
-    <div>Hello World</div>
-    <div>Spending Power</div>
+<div class="main">
+    <button class="btn">点击切换</button>
+    <p transfer-toggle="transfer">Spending Power</p>
+    <p transfer-toggle="transfer">Zongzi</p>
+    <p transfer-toggle="transfer">Apple</p>
+
+</div>
+<script type="text/javascript">
+
+    function getArr() {
+        var arrHtml = [];
+        var arrThis = [];
+        var text = $("[transfer-toggle='transfer']").text(function (i, text) {         // selected all areas to be translated
+            // console.log(i + text.replace("\n", "").replace(/\s+/g, ' '));
+            arrHtml.push(text.replace("\n", " ")); //
+            arrThis.push($(this))
+        });
+        return [arrHtml, arrThis]
+    }
+
+
+    function GetBaidu(from, to, query, obj) {
+        console.log(query)
+        var q = query.join("\n"); // 将内容数组用 \n 拼接
+        var appid = "20240515002052019"; // 请自行获取
+        var key = "BLuUfOHXoF_W2V_BuZLu"; // 请自行获取
+        var salt = (new Date).getTime();
+        var str1 = appid + q + salt + key;
+        var sign = md5(str1);
+        $.ajax({
+            url: 'http://api.fanyi.baidu.com/api/trans/vip/translate',
+            type: 'post',
+            dataType: 'jsonp',
+            data: {
+                q: q,
+                from: from,
+                to: to,
+                appid: appid,
+                salt: salt,
+                sign: sign
+            },
+            success: function (msg) {
+                var html = "";
+                for (var i = 0; i < msg.trans_result.length; i++) {
+                    // console.log(msg.trans_result[i].dst);
+                    html = msg.trans_result[i].dst;
+                    obj[i].html(html)
+                }
+            }
+        });
+    }
+
+
+    var num = 0;
+    $(".btn").on("click", function () {
+        if (num === 0) {
+            num = 1;
+            GetBaidu("en", "zh", getArr()[0], getArr()[1]);
+        } else {
+            num = 0;
+            GetBaidu("zh", "en", getArr()[0], getArr()[1]); 
+            // change back to the description stored in your Database when applying.
+        }
+    })
+
+
+</script>
 </body>
-</html>
